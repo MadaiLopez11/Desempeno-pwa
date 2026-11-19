@@ -27,7 +27,7 @@
             "styles": ["src/styles.css"]
           },
           "configurations": {
-           "production": {
+            "production": {
               "budgets": [
                 {
                   "type": "initial",
@@ -49,6 +49,12 @@
                 }
               ]
             },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
           "defaultConfiguration": "production"
         },
         "serve": {
@@ -69,4 +75,4 @@
       }
     }
   }
-}}
+}
