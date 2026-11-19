@@ -1,0 +1,104 @@
+<div class="app-shell">
+  <main class="container">
+    <header class="header">
+      <div class="brand">
+        <div class="brand-icon">🎵</div>
+        <div>
+          <h1>SoundPulse Music PWA</h1>
+          <p class="subtitle">Explora canciones, escucha vistas previas y opera sin conexión</p>
+        </div>
+      </div>
+
+      <div class="badges">
+        <span class="badge" [class.online]="isOnline()" [class.offline]="!isOnline()">
+          {{ isOnline() ? '● En línea' : '○ Sin conexión (Caché)' }}
+        </span>
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="pushService.subscribeToNotifications()"
+          [disabled]="pushService.isSubscribed()"
+        >
+          {{ pushService.isSubscribed() ? '🔔 Alertas activas' : '🔔 Activar notificaciones' }}
+        </button>
+      </div>
+    </header>
+
+    @if (pushService.statusMessage()) {
+      <div class="alert alert-info">
+        {{ pushService.statusMessage() }}
+      </div>
+    }
+
+    @if (pushService.incomingNotification(); as notif) {
+      <div class="alert alert-push">
+        <strong>{{ notif.title }}</strong> — {{ notif.body }}
+      </div>
+    }
+
+    <section class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="searchMusic()"
+        placeholder="Buscar artista, canción o género (ej. Rels B, Paulo Londra, rock)..."
+        aria-label="Buscar música"
+      />
+      <button type="button" class="btn btn-primary" (click)="searchMusic()">
+        Buscar
+      </button>
+    </section>
+
+    @if (isLoading()) {
+      <div class="state-box">
+        <p>Cargando catálogo musical...</p>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="state-box error">
+        <p>{{ errorMessage() }}</p>
+        <button type="button" class="btn btn-secondary" (click)="searchMusic()">
+          Reintentar
+        </button>
+      </div>
+    } @else if (tracks().length === 0) {
+      <div class="state-box">
+        <p>No se encontraron canciones para "{{ searchQuery }}".</p>
+      </div>
+    } @else {
+      <section class="grid">
+        @for (track of tracks(); track track.trackId) {
+          <article class="card">
+            <div class="cover-wrapper">
+              <img
+                [src]="getHighResArtwork(track.artworkUrl100)"
+                [alt]="track.trackName"
+                class="cover"
+                loading="lazy"
+              />
+            </div>
+
+            <div class="card-body">
+              <span class="genre-pill">{{ track.primaryGenreName }}</span>
+              <h2 class="track-title" [title]="track.trackName">{{ track.trackName }}</h2>
+              <p class="artist">{{ track.artistName }}</p>
+              <p class="meta" [title]="track.collectionName">{{ track.collectionName }}</p>
+
+              @if (track.previewUrl) {
+                <audio controls preload="none" [src]="track.previewUrl" class="audio-player"></audio>
+              }
+
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="notifySelectedArtist(track.artistName)"
+              >
+                Enviar alerta de {{ track.artistName }}
+              </button>
+            </div>
+          </article>
+        }
+      </section>
+    }
+  </main>
+</div>
